@@ -60,6 +60,7 @@
     "tunnel-rat": "0.1.2"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^1.5.6",
     "@excalidraw/eslint-config": "1.0.3",
     "@excalidraw/prettier-config": "1.0.2",
     "@types/chai": "4.3.0",
@@ -116,7 +117,8 @@
     "prepare": "husky install",
     "prettier": "prettier \"**/*.{css,scss,json,md,html,yml}\" --ignore-path=.eslintignore",
     "start": "vite",
-    "start:production": "npm run build && npx http-server build -a localhost -p 5001 -o",
+    "start:production": "npm run build && npx http-server build -a localhost -p 1420 -o",
+    "dev": "npm run build && npx http-server build -a localhost -p 1420 -o",
     "test:all": "yarn test:typecheck && yarn test:code && yarn test:other && yarn test:app --watch=false",
     "test:app": "vitest --config vitest.config.ts",
     "test:code": "eslint --max-warnings=0 --ext .js,.ts,.tsx .",
@@ -130,6 +132,7 @@
     "autorelease": "node scripts/autorelease.js",
     "prerelease": "node scripts/prerelease.js",
     "build:preview": "yarn build && vite preview --port 5000",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "tauri": "tauri"
   }
 }
