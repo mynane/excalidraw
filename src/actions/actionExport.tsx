@@ -147,9 +147,11 @@ export const actionSaveToActiveFile = register({
     const fileHandleExists = !!appState.fileHandle;
 
     try {
-      const { fileHandle } = isImageFileHandle(appState.fileHandle)
-        ? await resaveAsImageWithScene(elements, appState, app.files)
-        : await saveAsJSON(elements, appState, app.files);
+      const { fileHandle } = (
+        isImageFileHandle(appState.fileHandle)
+          ? await resaveAsImageWithScene(elements, appState, app.files)
+          : await saveAsJSON(elements, appState, app.files)
+      ) as any;
 
       return {
         commitToHistory: false,
@@ -187,14 +189,14 @@ export const actionSaveFileToDisk = register({
   trackEvent: { category: "export" },
   perform: async (elements, appState, value, app) => {
     try {
-      const { fileHandle } = await saveAsJSON(
+      const { fileHandle } = (await saveAsJSON(
         elements,
         {
           ...appState,
           fileHandle: null,
         },
         app.files,
-      );
+      )) as any;
       return {
         commitToHistory: false,
         appState: {
@@ -243,7 +245,7 @@ export const actionLoadScene = register({
         elements: loadedElements,
         appState: loadedAppState,
         files,
-      } = await loadFromJSON(appState, elements);
+      } = (await loadFromJSON(appState, elements)) as any;
       return {
         elements: loadedElements,
         appState: loadedAppState,
