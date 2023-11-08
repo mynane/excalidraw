@@ -20,6 +20,10 @@ import { Theme } from "../element/types";
 
 import "../components/ToolIcon.scss";
 
+function getFileName(file: string) {
+  return file.split("/").pop();
+}
+
 export const actionChangeProjectName = register({
   name: "changeProjectName",
   trackEvent: false,
@@ -157,7 +161,7 @@ export const actionSaveToActiveFile = register({
                 message: fileHandle?.name
                   ? t("toast.fileSavedToFilename").replace(
                       "{filename}",
-                      `"${fileHandle.name}"`,
+                      `"${getFileName(fileHandle.name)}"`,
                     )
                   : t("toast.fileSaved"),
               }

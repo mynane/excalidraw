@@ -1,4 +1,6 @@
 import polyfill from "../src/polyfill";
+import { save } from "@tauri-apps/api/dialog";
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "../src/analytics";
@@ -102,6 +104,7 @@ import { ShareableLinkDialog } from "../src/components/ShareableLinkDialog";
 import { openConfirmModal } from "../src/components/OverwriteConfirm/OverwriteConfirmState";
 import { OverwriteConfirmDialog } from "../src/components/OverwriteConfirm/OverwriteConfirm";
 import Trans from "../src/components/Trans";
+import { serializeAsBlob } from "../src/data/json";
 
 polyfill();
 
@@ -700,28 +703,8 @@ const ExcalidrawWrapper = () => {
           canvasActions: {
             toggleTheme: true,
             export: {
-              onExportToBackend,
-              renderCustomUI: (elements, appState, files) => {
-                return (
-                  <ExportToExcalidrawPlus
-                    elements={elements}
-                    appState={appState}
-                    files={files}
-                    onError={(error) => {
-                      excalidrawAPI?.updateScene({
-                        appState: {
-                          errorMessage: error.message,
-                        },
-                      });
-                    }}
-                    onSuccess={() => {
-                      excalidrawAPI?.updateScene({
-                        appState: { openDialog: null },
-                      });
-                    }}
-                  />
-                );
-              },
+              // saveFileToDisk: false,
+              // onExportToTauri,
             },
           },
         }}
@@ -732,26 +715,26 @@ const ExcalidrawWrapper = () => {
         onLibraryChange={onLibraryChange}
         autoFocus={true}
         theme={theme}
-        renderTopRightUI={(isMobile) => {
-          if (isMobile || !collabAPI || isCollabDisabled) {
-            return null;
-          }
-          return (
-            <LiveCollaborationTrigger
-              isCollaborating={isCollaborating}
-              onSelect={() => setCollabDialogShown(true)}
-            />
-          );
-        }}
+        // renderTopRightUI={(isMobile) => {
+        //   if (isMobile || !collabAPI || isCollabDisabled) {
+        //     return null;
+        //   }
+        //   return (
+        //     <LiveCollaborationTrigger
+        //       isCollaborating={isCollaborating}
+        //       onSelect={() => setCollabDialogShown(true)}
+        //     />
+        //   );
+        // }}
       >
         <AppMainMenu
           setCollabDialogShown={setCollabDialogShown}
           isCollaborating={isCollaborating}
-          isCollabEnabled={!isCollabDisabled}
+          isCollabEnabled={false}
         />
         <AppWelcomeScreen
           setCollabDialogShown={setCollabDialogShown}
-          isCollabEnabled={!isCollabDisabled}
+          isCollabEnabled={false}
         />
         <OverwriteConfirmDialog>
           <OverwriteConfirmDialog.Actions.ExportToImage />

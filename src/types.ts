@@ -468,6 +468,12 @@ export type ExportOpts = {
     files: BinaryFiles,
     canvas: HTMLCanvasElement,
   ) => void;
+  onExportToTauri?: (
+    exportedElements: readonly NonDeletedExcalidrawElement[],
+    appState: UIAppState,
+    files: BinaryFiles,
+    canvas: HTMLCanvasElement,
+  ) => void;
   renderCustomUI?: (
     exportedElements: readonly NonDeletedExcalidrawElement[],
     appState: UIAppState,

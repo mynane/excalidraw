@@ -17,6 +17,9 @@ import {
   ExportedLibraryData,
   ImportedLibraryData,
 } from "./types";
+import { isInTauri } from "../utils";
+import { open } from "@tauri-apps/api/dialog";
+import { readBinaryFile } from "@tauri-apps/api/fs";
 
 /**
  * Strips out files which are only referenced by deleted elements
@@ -67,15 +70,24 @@ export const serializeAsJSON = (
   return JSON.stringify(data, null, 2);
 };
 
+export const serializeAsBlob = (
+  elements: readonly ExcalidrawElement[],
+  appState: Partial<AppState>,
+  files: BinaryFiles,
+  type: "local" | "database",
+) => {
+  return new Blob([serializeAsJSON(elements, appState, files, type)], {
+    type: MIME_TYPES.excalidraw,
+  });
+};
+
 export const saveAsJSON = async (
   elements: readonly ExcalidrawElement[],
   appState: AppState,
   files: BinaryFiles,
 ) => {
-  const serialized = serializeAsJSON(elements, appState, files, "local");
-  const blob = new Blob([serialized], {
-    type: MIME_TYPES.excalidraw,
-  });
+  // const serialized = serializeAsJSON(elements, appState, files, "local");
+  const blob = serializeAsBlob(elements, appState, files, "local");
 
   const fileHandle = await fileSave(blob, {
     name: appState.name,
@@ -85,6 +97,7 @@ export const saveAsJSON = async (
       ? null
       : appState.fileHandle,
   });
+
   return { fileHandle };
 };
 
@@ -92,12 +105,37 @@ export const loadFromJSON = async (
   localAppState: AppState,
   localElements: readonly ExcalidrawElement[] | null,
 ) => {
+  if (isInTauri) {
+    const filepath = (await open({
+      directory: false,
+      multiple: false,
+      filters: [
+        {
+          name: "Excalidraw files",
+          extensions: ["excalidraw"],
+        },
+      ],
+    })) as string;
+
+    if (!filepath) {
+      return;
+    }
+
+    const contents = await readBinaryFile(filepath);
+    const blob = new Blob([contents]);
+
+    return loadFromBlob(blob, localAppState, localElements, {
+      kind: "file",
+      name: filepath,
+    } as any);
+  }
   const file = await fileOpen({
     description: "Excalidraw files",
     // ToDo: Be over-permissive until https://bugs.webkit.org/show_bug.cgi?id=34442
     // gets resolved. Else, iOS users cannot open `.excalidraw` files.
     // extensions: ["json", "excalidraw", "png", "svg"],
   });
+
   return loadFromBlob(
     await normalizeFile(file),
     localAppState,

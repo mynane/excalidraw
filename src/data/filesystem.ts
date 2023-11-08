@@ -4,13 +4,26 @@ import {
   FileSystemHandle,
   supported as nativeFileSystemSupported,
 } from "browser-fs-access";
+import { open } from "@tauri-apps/api/dialog";
 import { EVENT, MIME_TYPES } from "../constants";
 import { AbortError } from "../errors";
-import { debounce } from "../utils";
+import { debounce, isInTauri } from "../utils";
+import { writeBinaryFile } from "@tauri-apps/api/fs";
 
 type FILE_EXTENSION = Exclude<keyof typeof MIME_TYPES, "binary">;
 
 const INPUT_CHANGE_INTERVAL_MS = 500;
+
+function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      resolve(reader.result as ArrayBuffer);
+    };
+    reader.readAsArrayBuffer(blob);
+  });
+}
 
 export const fileOpen = <M extends boolean | undefined = false>(opts: {
   extensions?: FILE_EXTENSION[];
@@ -75,7 +88,7 @@ export const fileOpen = <M extends boolean | undefined = false>(opts: {
   }) as Promise<RetType>;
 };
 
-export const fileSave = (
+export const fileSave = async (
   blob: Blob,
   opts: {
     /** supply without the extension */
@@ -87,6 +100,30 @@ export const fileSave = (
     fileHandle?: FileSystemHandle | null;
   },
 ) => {
+  if (isInTauri) {
+    let filepath = null;
+    if (!opts.fileHandle) {
+      const dirpath = await open({
+        directory: true,
+      });
+
+      if (!dirpath) {
+        return;
+      }
+      filepath = `${dirpath}/${opts.name}.${opts.extension}`;
+    } else {
+      filepath = opts.fileHandle.name;
+    }
+
+    const arrbuff = await blobToArrayBuffer(blob);
+    await writeBinaryFile(filepath, arrbuff);
+
+    return {
+      kind: "file",
+      name: filepath,
+    } as FileSystemHandle;
+  }
+
   return _fileSave(
     blob,
     {

@@ -931,3 +931,5 @@ export const isMemberOf = <T extends string>(
     ? collection.includes(value as T)
     : collection.hasOwnProperty(value);
 };
+
+export const isInTauri = !!(window as any).__TAURI_IPC__;

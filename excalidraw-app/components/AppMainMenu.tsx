@@ -24,7 +24,7 @@ export const AppMainMenu: React.FC<{
       <MainMenu.DefaultItems.Help />
       <MainMenu.DefaultItems.ClearCanvas />
       <MainMenu.Separator />
-      <MainMenu.ItemLink
+      {/* <MainMenu.ItemLink
         icon={PlusPromoIcon}
         href={`${
           import.meta.env.VITE_APP_PLUS_LP
@@ -32,9 +32,9 @@ export const AppMainMenu: React.FC<{
         className="ExcalidrawPlus"
       >
         Excalidraw+
-      </MainMenu.ItemLink>
-      <MainMenu.DefaultItems.Socials />
-      <MainMenu.Separator />
+      </MainMenu.ItemLink> */}
+      {/* <MainMenu.DefaultItems.Socials /> */}
+      {/* <MainMenu.Separator /> */}
       <MainMenu.DefaultItems.ToggleTheme />
       <MainMenu.ItemCustom>
         <LanguageList style={{ width: "100%" }} />

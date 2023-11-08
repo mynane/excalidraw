@@ -13,7 +13,7 @@ import "./ExportDialog.scss";
 import { nativeFileSystemSupported } from "../data/filesystem";
 import { trackEvent } from "../analytics";
 import { ActionManager } from "../actions/manager";
-import { getFrame } from "../utils";
+import { getFrame, isInTauri } from "../utils";
 
 export type ExportCB = (
   elements: readonly NonDeletedExcalidrawElement[],
@@ -39,7 +39,7 @@ const JSONExportModal = ({
   exportOpts: ExportOpts;
   canvas: HTMLCanvasElement;
 }) => {
-  const { onExportToBackend } = exportOpts;
+  const { onExportToBackend, onExportToTauri } = exportOpts;
   return (
     <div className="ExportDialog ExportDialog--json">
       <div className="ExportDialog-cards">
@@ -60,6 +60,32 @@ const JSONExportModal = ({
               showAriaLabel={true}
               onClick={() => {
                 actionManager.executeAction(actionSaveFileToDisk, "ui");
+              }}
+            />
+          </Card>
+        )}
+        {onExportToTauri && (
+          <Card color="lime">
+            <div className="Card-icon">{exportToFileIcon}</div>
+            <h2>{t("exportDialog.disk_title")}</h2>
+            <div className="Card-details">
+              {t("exportDialog.disk_details")}
+              {!isInTauri && actionManager.renderAction("changeProjectName")}
+            </div>
+            <ToolButton
+              className="Card-button"
+              type="button"
+              title={t("exportDialog.disk_button")}
+              aria-label={t("exportDialog.disk_button")}
+              showAriaLabel={true}
+              onClick={async () => {
+                try {
+                  trackEvent("export", "link", `ui (${getFrame()})`);
+                  await onExportToTauri(elements, appState, files, canvas);
+                  onCloseRequest();
+                } catch (error: any) {
+                  setAppState({ errorMessage: error.message });
+                }
               }}
             />
           </Card>
